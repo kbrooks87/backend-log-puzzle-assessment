@@ -27,7 +27,17 @@ def read_urls(filename):
     alphabetically in increasing order, and screening out duplicates.
     """
     # +++your code here+++
-    pass
+    server = filename[re.search(r"_(.*?)", filename).span()[1]:]
+    puzzle_urls = []
+    with open(filename, "r") as f:
+        for line in f:
+            paths = re.findall(r'GET \S+ HTTP', line)
+            for path in paths:
+                if path[5:-5] not in puzzle_urls and "puzzle" in path:
+                    puzzle_urls.append(path[5:-5])
+            puzzle_urls.sort(key=lambda x: x[-8:-4])
+    puzzle_urls = list(map(lambda each: "http://"+server + "/" + each, puzzle_urls))
+    return puzzle_urls
 
 
 def download_images(img_urls, dest_dir):
@@ -39,7 +49,21 @@ def download_images(img_urls, dest_dir):
     Creates the directory if necessary.
     """
     # +++your code here+++
-    pass
+    images_list = []
+    if not os.path.isdir(dest_dir):
+        os.makedirs(dest_dir)
+    for i, each in enumerate(img_urls):
+        print(f"Downloading File # {i} of {len(img_urls)}")
+        file_name = dest_dir + "/img" + str(i) + each[-4:]
+        urllib.request.urlretrieve(each, file_name)
+        images_list.append("img" + str(i) + each[-4:])
+    with open(dest_dir + "/index.html", 'a') as f:
+        f.write("<html>")
+        f.write("<body>")
+        for image in images_list:
+            f.write(f'<img src={image}>')
+        f.write("</body>")
+        f.write("</html>")
 
 
 def create_parser():
